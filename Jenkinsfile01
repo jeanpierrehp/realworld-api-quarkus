@@ -1,6 +1,10 @@
 pipeline {
 
-    agent any
+    agent {
+        docker {
+            image 'ubuntu:latest'
+        }
+    }
 
     environment {
         DOCKER_CREDS = credentials('docker-credentials')
@@ -43,9 +47,12 @@ pipeline {
         }
         stage('Install Trivy') {
             steps {
-                script {
-                    sh 'trivy -v'
-                }
+                sh """
+                    sudo yum search wget
+                    sudo yum install wget
+                    sudo rpm -ivh https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.rpm
+                    trivy -v
+                """
             }
         }
         stage('Scan Trivy'){
