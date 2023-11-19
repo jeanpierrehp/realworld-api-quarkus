@@ -44,9 +44,6 @@ pipeline {
         stage('Install Trivy') {
             steps {
                 script {
-                    sh 'sudo yum search wget'
-                    sh 'sudo yum install wget'
-                    sh 'sudo rpm -ivh https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.rpm'
                     sh 'trivy -v'
                 }
             }
