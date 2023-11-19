@@ -4,6 +4,6 @@ services:
     image: realworld-api-quarkus
     build:
       context: .
-      dockerfile: ./src/main/docker/Dockerfile.jvm
+      dockerfile: ./src/main/docker/Dockerfile
     ports:
       - 8080:8080
