@@ -14,7 +14,7 @@ pipeline {
             }
             steps {
                 sh 'mvn -B verify -DskipTests'
-                archiveArtifacts artifacts: 'target/*', fingerprint: true, onlyIfSuccessful: true
+                archiveArtifacts artifacts: 'target/', fingerprint: true, onlyIfSuccessful: true
             }
         }
 
