@@ -43,17 +43,18 @@ pipeline {
         }
         stage('Install Trivy') {
             steps {
-                script {
-                    sh 'uname'
-                    sh 'uname -r'
-                    sh 'whoami'
-                    sh 'sudo su -'
-                    sh 'whoami'
-                    sh 'sudo yum search wget'
-                    sh 'sudo yum install wget'
-                    sh 'sudo rpm -ivh https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.rpm'
-                    sh 'trivy -v'
-                }
+                sh """
+                    uname
+                    uname -r
+                    cat /etc/*-release
+                    whoami
+                    apt-get install rpm -y
+                    apt-get install wget -y
+                    apt-get install dpkg -y
+                    wget https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.deb
+                    dpkg -i trivy_${TRIVY_VERSION}_Linux-64bit.deb
+                    trivy -v
+                """
             }
         }
         stage('Scan Trivy'){
