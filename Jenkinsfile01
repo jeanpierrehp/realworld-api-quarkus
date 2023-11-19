@@ -4,7 +4,7 @@ pipeline {
 
     environment {
         DOCKER_CREDS = credentials('docker-credentials')
-        TRIVY_VERSION = '0.9.2'
+        TRIVY_VERSION = '0.16.0'
     }
 
     stages {
@@ -44,9 +44,9 @@ pipeline {
         stage('Install Trivy') {
             steps {
                 sh """
-                    sudo apt-get install rpm
-                    wget https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.deb
-                    sudo dpkg -i trivy_${TRIVY_VERSION}_Linux-64bit.deb
+                    sudo yum search wget
+                    sudo yum install wget
+                    sudo rpm -ivh https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.rpm
                     trivy -v
                 """
             }
