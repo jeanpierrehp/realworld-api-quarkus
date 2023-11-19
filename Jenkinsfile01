@@ -1,0 +1,63 @@
+pipeline {
+
+    agent any
+
+    environment {
+        DOCKER_CREDS = credentials('docker-credentials')
+        TRIVY_VERSION = '0.9.2'
+    }
+
+    stages {
+        stage('Build') {
+            agent {
+                docker { image 'maven:3.6.3-openjdk-11-slim' }
+            }
+            steps {
+                sh 'mvn -B verify'
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true, onlyIfSuccessful: true
+            }
+        }
+
+        stage('Build Image') {
+            steps {
+                copyArtifacts filter: 'target/*.jar',
+                            fingerprintArtifacts: true,
+                            projectName: '${JOB_NAME}',
+                            flatten: true,
+                            selector: specific('${BUILD_NUMBER}'),
+                            target: 'target';
+                sh 'docker --version'
+                sh 'docker-compose --version'
+                sh 'docker-compose build'
+            }
+        }
+        stage('Publish Image') {
+            steps {
+                script {
+                    sh 'docker login -u ${DOCKER_CREDS_USR} -p ${DOCKER_CREDS_PSW}'
+                    sh 'docker tag realworld-api-quarkus ${DOCKER_CREDS_USR}/realworld-api-quarkus:$BUILD_NUMBER'
+                    sh 'docker push ${DOCKER_CREDS_USR}/realworld-api-quarkus:$BUILD_NUMBER'
+                    sh 'docker logout'
+                }
+            }
+        }
+        stage('Install Trivy') {
+            steps {
+                sh """
+                    sudo apt-get install rpm
+                    wget https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.deb
+                    sudo dpkg -i trivy_${TRIVY_VERSION}_Linux-64bit.deb
+                    trivy -v
+                """
+            }
+        }
+        stage('Scan Trivy'){
+            steps {
+                sh """
+                    trivy image --exit-code 0 --severity LOW,MEDIUM ${DOCKER_CREDS_USR}/realworld-api-quarkus:$BUILD_NUMBER
+                    trivy image --exit-code 1 --severity HIGH,CRITICAL ${DOCKER_CREDS_USR}/realworld-api-quarkus:$BUILD_NUMBER
+                """
+            }
+        }
+    }
+}
