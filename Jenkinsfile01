@@ -44,6 +44,8 @@ pipeline {
         stage('Install Trivy') {
             steps {
                 script {
+                    sh 'uname'
+                    sh 'uname -r'
                     sh 'whoami'
                     sh 'sudo su -'
                     sh 'whoami'
